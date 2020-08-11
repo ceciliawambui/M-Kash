@@ -70,7 +70,8 @@ public class HomeActivity extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
+                Log.i("Home","Nothing selected");
+//                getSummary();
             }
         });
 

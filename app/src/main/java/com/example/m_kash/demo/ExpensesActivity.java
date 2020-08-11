@@ -109,7 +109,7 @@ public class ExpensesActivity extends AppCompatActivity {
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                alertDialog.hide();
+                alertDialog.dismiss();
             }
         });
         okay.setOnClickListener(new View.OnClickListener() {
@@ -122,7 +122,7 @@ public class ExpensesActivity extends AppCompatActivity {
 
                 myDbAdapter mydbadapter = new myDbAdapter(ExpensesActivity.this);
                 mydbadapter.insertMonthlyExpenses(amounts, categorys, months);
-                alertDialog.hide();
+                alertDialog.dismiss();
                 Toast.makeText(ExpensesActivity.this, "Successfully Added Expense", Toast.LENGTH_LONG).show();
 
             }

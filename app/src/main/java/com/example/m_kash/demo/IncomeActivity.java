@@ -105,7 +105,7 @@ public class IncomeActivity extends AppCompatActivity {
         Cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                alertDialog.hide();
+                alertDialog.dismiss();
             }
         });
 
@@ -120,7 +120,7 @@ public class IncomeActivity extends AppCompatActivity {
                 myDbAdapter mydbadapter = new myDbAdapter(IncomeActivity.this);
                 mydbadapter.insertMonthlyIncome(amounts, periods);
                 Toast.makeText(IncomeActivity.this, "Successfully Added Income",Toast.LENGTH_LONG).show();
-                alertDialog.hide();
+                alertDialog.dismiss();
                 getIncomes();
             }
         });
