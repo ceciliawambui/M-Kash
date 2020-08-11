@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">M-Kash</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="create_account"><font color="#00ff00">text</font></string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="username">Username</string>
+    <string name="register">Register</string>
+    <string name="back_to_login">Back to Login</string>
+    <string name="login_failed" />
+    <string name="invalid_username" />
+    <string name="invalid_password" />
+    <string name="hello">Hello</string>
+    <string name="done">Done</string>
+    <string name="food">Food</string>
+    <string name="add_item">Add item</string>
+    <string-array name="array_period">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
+
+</resources>
