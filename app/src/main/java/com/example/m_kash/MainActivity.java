@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.m_kash.database.SqliteHelper;
+import com.example.m_kash.demo.HomeActivity;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
                 if (validate()) {
                     String Email = editTextEmail.getText().toString();
                     String Password = editTextPassword.getText().toString();
-                    Toast.makeText(MainActivity.this,"Successful", Toast.LENGTH_LONG).show();
-                    Intent intent=new Intent(MainActivity.this, Home.class);
+//                    Toast.makeText(MainActivity.this,"Successful", Toast.LENGTH_LONG).show();
+                    Intent intent=new Intent(MainActivity.this, HomeActivity.class);
                     startActivity(intent);
                     finish();
                 }

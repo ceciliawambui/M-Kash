@@ -50,6 +50,8 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         sqliteHelper = new SqliteHelper(this);
+
+        setTitle("Register");
         initTextViewLogin();
         initViews();
         buttonRegister.setOnClickListener(new View.OnClickListener() {

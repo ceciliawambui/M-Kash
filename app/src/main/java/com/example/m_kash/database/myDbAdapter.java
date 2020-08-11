@@ -5,9 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 import android.util.Log;
 
-import com.example.m_kash.database.Message;
+import com.example.m_kash.demo.model.Expense;
 
 import java.util.ArrayList;
 
@@ -30,6 +31,7 @@ public class myDbAdapter {
         long id = dbb.insert(myDbHelper.TABLE_NAME, null, contentValues);
         return id;
     }
+
     public long insertMonthlyExpenses(String amount, String category, String month) {
         SQLiteDatabase dbb = myhelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -39,6 +41,7 @@ public class myDbAdapter {
         long id = dbb.insert(myDbHelper.MONTHLY_EXPENSES_TABLE, null, contentValues);
         return id;
     }
+
     public long insertBudget(String amount, String category, String month) {
         SQLiteDatabase dbb = myhelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -48,6 +51,7 @@ public class myDbAdapter {
         long id = dbb.insert(myDbHelper.MONTHLY_EXPENSES_TABLE, null, contentValues);
         return id;
     }
+
     public long insertMonthlyIncome(String amount, String month) {
         SQLiteDatabase dbb = myhelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -56,44 +60,124 @@ public class myDbAdapter {
         long id = dbb.insert(myDbHelper.MONTHLY_INCOME_TABLE, null, contentValues);
         return id;
     }
+
     public ArrayList getAllExpenseRecords() {
         SQLiteDatabase db = myhelper.getReadableDatabase();
         ArrayList<String> array_list = new ArrayList<String>();
-        Cursor res = db.rawQuery( "select * from "+myDbHelper.MONTHLY_EXPENSES_TABLE, null );
+        Cursor res = db.rawQuery("select * from " + myDbHelper.MONTHLY_EXPENSES_TABLE, null);
         res.moveToFirst();
-        while(res.isAfterLast() == false) {
+        while (res.isAfterLast() == false) {
             array_list.add(res.getString(res.getColumnIndex(myDbHelper.AMOUNT)));
             array_list.add(res.getString(res.getColumnIndex(myDbHelper.MONTH)));
             res.moveToNext();
         }
         return array_list;
     }
+
+    public ArrayList<Expense> getExpensesPerMonth(String month) {
+        ArrayList<Expense> expenses = new ArrayList<>();
+        String selectQuery = "SELECT  *  FROM  " + myDbHelper.MONTHLY_EXPENSES_TABLE
+                + " WHERE " + myDbHelper.MONTH + "='" + month + "'";
+        try {
+            SQLiteDatabase db = myhelper.getWritableDatabase();
+            Cursor cursor = db.rawQuery(selectQuery, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    Expense expense = new Expense(
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.CATEGORY)),
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.MONTH)),
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.AMOUNT)));
+
+                    if (!TextUtils.isEmpty(expense.amount) && !TextUtils.isEmpty(expense.category))
+                        expenses.add(expense);
+
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.i("Db", Log.getStackTraceString(e));
+        }
+        return expenses;
+    }
+
+    public ArrayList<Expense> getIncomes() {
+        ArrayList<Expense> expenses = new ArrayList<>();
+        String selectQuery = "SELECT  *  FROM  " + myDbHelper.MONTHLY_INCOME_TABLE;
+        try {
+            SQLiteDatabase db = myhelper.getWritableDatabase();
+            Cursor cursor = db.rawQuery(selectQuery, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    Expense expense = new Expense(
+                            "",
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.MONTH)),
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.AMOUNT)));
+
+                    if (!TextUtils.isEmpty(expense.amount))
+                        expenses.add(expense);
+
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.i("Db", Log.getStackTraceString(e));
+        }
+        return expenses;
+    }
+
+    public void deleteIncome(){}
+    public void deleteExpense(){}
+
+
+
+    public double getIncome(String month) {
+        double income=0;
+        String selectQuery = "SELECT  *  FROM  " + myDbHelper.MONTHLY_INCOME_TABLE
+                + " WHERE " + myDbHelper.MONTH + "='" + month + "'"; ;
+        try {
+
+            SQLiteDatabase db = myhelper.getWritableDatabase();
+            Cursor cursor = db.rawQuery(selectQuery, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    income=Double.parseDouble(cursor.getString(cursor.getColumnIndex(myDbHelper.AMOUNT)));
+
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e) {
+            Log.i("Db", Log.getStackTraceString(e));
+        }
+        return income;
+    }
+
     public ArrayList getAllExpenses() {
+
         SQLiteDatabase db = myhelper.getReadableDatabase();
         ArrayList<String> array_list = new ArrayList<String>();
-        Cursor res = db.rawQuery( "select * from "+myDbHelper.MONTHLY_BUDGET_TABLE, null );
+        Cursor res = db.rawQuery("select * from " + myDbHelper.MONTHLY_BUDGET_TABLE,
+                null);
         res.moveToFirst();
-        while(res.isAfterLast() == false) {
+        while (res.isAfterLast() == false) {
             array_list.add(res.getString(res.getColumnIndex(myDbHelper.AMOUNT)));
             array_list.add(res.getString(res.getColumnIndex(myDbHelper.CATEGORY)));
             res.moveToNext();
         }
         return array_list;
     }
+
     public ArrayList getAllBalanceRecords() {
         SQLiteDatabase db = myhelper.getReadableDatabase();
         ArrayList<String> array_list = new ArrayList<String>();
-        Cursor res = db.rawQuery( "select * from "+myDbHelper.MONTHLY_EXPENSES_TABLE, null );
-        Cursor resIncome = db.rawQuery( "select * from "+myDbHelper.MONTHLY_INCOME_TABLE, null );
+        Cursor res = db.rawQuery("select * from " + myDbHelper.MONTHLY_EXPENSES_TABLE, null);
+        Cursor resIncome = db.rawQuery("select * from " + myDbHelper.MONTHLY_INCOME_TABLE, null);
         res.moveToFirst();
         resIncome.moveToFirst();
-        while(res.isAfterLast() == false && resIncome.isAfterLast() ==false) {
+        while (res.isAfterLast() == false && resIncome.isAfterLast() == false) {
 
             int incomeValue = resIncome.getInt(resIncome.getColumnIndex(myDbHelper.AMOUNT));
             int expenseValue = res.getInt(res.getColumnIndex(myDbHelper.AMOUNT));
             Log.d("heres we have income", String.valueOf(incomeValue));
             Log.d("here we have expenses", String.valueOf(expenseValue));
-            int diff = incomeValue-expenseValue;
+            int diff = incomeValue - expenseValue;
             Log.d("difference", valueOf(diff));
             array_list.add(valueOf(diff));
             array_list.add(res.getString(res.getColumnIndex(myDbHelper.MONTH)));
@@ -106,24 +190,24 @@ public class myDbAdapter {
     public ArrayList getAllIncomeRecords() {
         SQLiteDatabase db = myhelper.getReadableDatabase();
         ArrayList<String> array_list = new ArrayList<String>();
-        Cursor res = db.rawQuery( "select * from "+myDbHelper.MONTHLY_INCOME_TABLE, null );
+        Cursor res = db.rawQuery("select * from " + myDbHelper.MONTHLY_INCOME_TABLE, null);
         res.moveToFirst();
-        while(res.isAfterLast() == false) {
+        while (res.isAfterLast() == false) {
             array_list.add(res.getString(res.getColumnIndex(myDbHelper.AMOUNT)));
             array_list.add(res.getString(res.getColumnIndex(myDbHelper.MONTH)));
             res.moveToNext();
         }
         return array_list;
     }
-    public long signUp(String name,String email, String pass)
-    {
+
+    public long signUp(String name, String email, String pass) {
         SQLiteDatabase dbb = myhelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(myDbHelper.NAME, name);
         contentValues.put(myDbHelper.MyPASSWORD, pass);
         contentValues.put(myDbHelper.EMAIL, email);
 
-        long id = dbb.insert(myDbHelper.TABLE_NAME, null , contentValues);
+        long id = dbb.insert(myDbHelper.TABLE_NAME, null, contentValues);
         return id;
     }
 
@@ -179,7 +263,7 @@ public class myDbAdapter {
         private static final String MONTHLY_INCOME = "CREATE TABLE " + MONTHLY_INCOME_TABLE +
                 " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + MONTH + " VARCHAR(225));";
         private static final String MONTHLY_BUDGET = "CREATE TABLE " + MONTHLY_BUDGET_TABLE +
-                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + CATEGORY + " VARCHAR(225),"+ MONTH + " VARCHAR(225));";
+                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + CATEGORY + " VARCHAR(225)," + MONTH + " VARCHAR(225));";
         private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
         private static final String DROP_MONTHLY_EXPENSES_TABLE = "DROP TABLE IF EXISTS " + MONTHLY_EXPENSES_TABLE;
         private static final String DROP_MONTHLY_INCOME_TABLE = "DROP TABLE IF EXISTS " + MONTHLY_INCOME_TABLE;

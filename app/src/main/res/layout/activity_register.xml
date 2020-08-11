@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
     android:fitsSystemWindows="true">
 
     <LinearLayout
@@ -22,6 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/username"
+            android:layout_margin="10dp"
             android:inputType="textPersonName"
             tools:ignore="MissingClass" />
 
@@ -30,6 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/email"
+            android:layout_margin="10dp"
             android:inputType="textEmailAddress"
             tools:ignore="MissingClass" />
 
@@ -39,18 +40,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/password"
+            android:layout_margin="10dp"
             android:inputType="textPassword" />
 
 
         <Button
             android:id="@+id/buttonRegister"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:textColor="@android:color/white"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             android:layout_weight="1"
-            android:background="@color/colorAccent"
+            android:background="@color/colorPrimary"
             android:text="@string/register" />
 
         <TextView

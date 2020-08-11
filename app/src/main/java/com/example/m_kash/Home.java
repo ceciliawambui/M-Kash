@@ -51,6 +51,8 @@ public class Home extends AppCompatActivity {
         monthlyExpense.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
                 LayoutInflater li = LayoutInflater.from(Home.this);
 //Creating a view to get the dialog box
                 View confirmDialog = li.inflate(R.layout.activity_monthly_expenses, null);
