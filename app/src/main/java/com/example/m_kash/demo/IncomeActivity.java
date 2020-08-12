@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -166,6 +167,16 @@ public class IncomeActivity extends AppCompatActivity {
                 bodyHolder.category.setText(expense.month);
                 bodyHolder.amount.setText(expense.amount);
 
+                 bodyHolder.remove.setOnClickListener(new View.OnClickListener() {
+                     @Override
+                     public void onClick(View v) {
+                         //delete from database
+                         new myDbAdapter(IncomeActivity.this).deleteIncome(expense.id);
+                         //reload list
+                         getIncomes();
+                         Toast.makeText(IncomeActivity.this,"Income removed",Toast.LENGTH_LONG).show();
+                     }
+                 });
 
             }
 
@@ -195,13 +206,13 @@ public class IncomeActivity extends AppCompatActivity {
         public class BodyHolder extends RecyclerView.ViewHolder {
 
             TextView amount, category;
-
+ImageButton remove;
             public BodyHolder(View v) {
                 super(v);
 //                name = v.findViewById(R.id.name);
                 category = v.findViewById(R.id.category);
                 amount = v.findViewById(R.id.amount);
-
+                remove=v.findViewById(R.id.remove);
             }
         }
 

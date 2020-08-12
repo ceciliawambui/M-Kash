@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -227,6 +228,19 @@ Log.i("Expense",expense.category);
                 bodyHolder.category.setText(expense.category);
                 bodyHolder.amount.setText(expense.amount);
 
+                bodyHolder.remove.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //delete from database
+                        new myDbAdapter(ExpensesActivity.this).deleteExpense(expense.id);
+                        //reload list
+                        String month=selectedMonth.getSelectedItem().toString();
+                        ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this).getExpensesPerMonth(month);
+                        getExpenses(expenses);
+                        Toast.makeText(ExpensesActivity.this,"Expense removed",Toast.LENGTH_LONG).show();
+                    }
+                });
+
 
             }
 
@@ -256,12 +270,14 @@ Log.i("Expense",expense.category);
         public class BodyHolder extends RecyclerView.ViewHolder {
 
             TextView amount, category;
+            ImageButton remove;
 
             public BodyHolder(View v) {
                 super(v);
 //                name = v.findViewById(R.id.name);
                 category = v.findViewById(R.id.category);
                 amount = v.findViewById(R.id.amount);
+                remove=v.findViewById(R.id.remove);
 
             }
         }
