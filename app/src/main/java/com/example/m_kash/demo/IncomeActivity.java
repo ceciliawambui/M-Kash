@@ -1,9 +1,5 @@
 package com.example.m_kash.demo;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -11,27 +7,34 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.m_kash.Home;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.m_kash.R;
 import com.example.m_kash.database.myDbAdapter;
 import com.example.m_kash.demo.model.Expense;
 import com.example.m_kash.demo.model.ExpenseHeader;
 import com.example.m_kash.demo.model.RecyclerViewItem;
+import com.example.m_kash.demo.utils.DateUtils;
+import com.github.dewinjm.monthyearpicker.MonthYearPickerDialog;
+import com.github.dewinjm.monthyearpicker.MonthYearPickerDialogFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class IncomeActivity extends AppCompatActivity {
-
+    private static String TAG = IncomeActivity.class.getSimpleName();
     FloatingActionButton add;
     RecyclerView recyclerView;
     TextView error;
@@ -39,8 +42,12 @@ public class IncomeActivity extends AppCompatActivity {
     EditText amount;
     EditText category;
     Button okay;
-      Spinner period;
-    private Button  Cancel;
+    TextView period;
+    ImageView chooseMonth;
+    int yearSelected;
+    int monthSelected;
+
+    private Button Cancel;
     Button cancel;
 
     @Override
@@ -58,34 +65,69 @@ public class IncomeActivity extends AppCompatActivity {
             }
         });
         recyclerView = findViewById(R.id.recycler_view);
-        error=findViewById(R.id.error);
+        error = findViewById(R.id.error);
 
         getIncomes();
     }
 
-    void getIncomes(){
+    void getIncomes() {
         ArrayList<RecyclerViewItem> recyclerViewItems = new ArrayList<>();
 
-        ArrayList<Expense> incomes =  new myDbAdapter(IncomeActivity.this).getIncomes();
+        ArrayList<Expense> incomes = new myDbAdapter(IncomeActivity.this).getIncomes();
         recyclerViewItems.clear();
-//        recyclerViewItems.add(new ExpenseHeader(String.valueOf(total)));
+
         recyclerViewItems.addAll(incomes);
 
-        if(recyclerViewItems.size()==0){
+        if (recyclerViewItems.size() == 0) {
             error.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
             return;
         }
+
         recyclerView.setVisibility(View.VISIBLE);
         error.setVisibility(View.GONE);
         LinearLayoutManager MyLayoutManager = new LinearLayoutManager(this);
         MyLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(MyLayoutManager);
-       MyAdapter bottomAdapter = new MyAdapter(IncomeActivity.this, recyclerViewItems);
+        MyAdapter bottomAdapter = new MyAdapter(IncomeActivity.this, recyclerViewItems);
         recyclerView.setAdapter(bottomAdapter);
     }
 
-    private void  addIncome(){
+//    I think some of the things amesema apo we had discussed about them like creating a budget.
+//    What we can do is create a budget with items for each month, when adding expenses
+//    choose from the list of budget items which will help you determine if a certain item
+//    has exceeded its limit eg if food is 6k then it exceeds 6k it shows you.
+//    Also we mentioned about year, should be added on the drop down as well.
+//    A calendar would work well.
+
+
+    public void getMonthYear() {
+        Calendar calendar = Calendar.getInstance();
+        yearSelected = calendar.get(Calendar.YEAR);
+        monthSelected = calendar.get(Calendar.MONTH);
+
+        MonthYearPickerDialogFragment dialogFragment = MonthYearPickerDialogFragment
+                .getInstance(monthSelected, yearSelected);
+
+        dialogFragment.show(getSupportFragmentManager(), null);
+        dialogFragment.setOnDateSetListener(new MonthYearPickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(int year, int monthOfYear) {
+                // do something
+                int month = monthOfYear + 1;
+
+                monthSelected = month;
+                yearSelected = year;
+
+                Log.i(TAG, " Selected month " + month);
+                period.setText(DateUtils.getMonth(month) + " " + year);
+                //get month
+            }
+        });
+    }
+
+
+    private void addIncome() {
 
         LayoutInflater li = LayoutInflater.from(IncomeActivity.this);
 //Creating a view to get the dialog box
@@ -93,8 +135,21 @@ public class IncomeActivity extends AppCompatActivity {
         amount = confirmDialog.findViewById(R.id.amount);
         period = confirmDialog.findViewById(R.id.period);
 
+        yearSelected = DateUtils.getYear();
+        monthSelected = DateUtils.getMonth();
+
+        period.setText(DateUtils.getMonth(monthSelected) + " " + yearSelected);
+
+
+        chooseMonth = confirmDialog.findViewById(R.id.choose_date);
+        chooseMonth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getMonthYear();
+            }
+        });
         Cancel = confirmDialog.findViewById(R.id.Cancel);
-        okay = confirmDialog.findViewById (R.id.submit);
+        okay = confirmDialog.findViewById(R.id.submit);
         AlertDialog.Builder alert = new AlertDialog.Builder(IncomeActivity.this);
 //Adding our dialo box to the view of alert dialog
         alert.setView(confirmDialog);
@@ -115,12 +170,9 @@ public class IncomeActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 String amounts = amount.getText().toString();
-                String periods = period.getSelectedItem().toString();
-
-
                 myDbAdapter mydbadapter = new myDbAdapter(IncomeActivity.this);
-                mydbadapter.insertMonthlyIncome(amounts, periods);
-                Toast.makeText(IncomeActivity.this, "Successfully Added Income",Toast.LENGTH_LONG).show();
+                mydbadapter.insertMonthlyIncome(amounts, String.valueOf(monthSelected),String.valueOf(yearSelected));
+                Toast.makeText(IncomeActivity.this, "Successfully Added Income", Toast.LENGTH_LONG).show();
                 alertDialog.dismiss();
                 getIncomes();
             }
@@ -145,7 +197,6 @@ public class IncomeActivity extends AppCompatActivity {
             View row;
 
 
-
             if (viewType == BODY_ITEM) {
                 row = inflater.inflate(R.layout.list_item_expense, parent, false);
                 return new BodyHolder(row);
@@ -158,25 +209,25 @@ public class IncomeActivity extends AppCompatActivity {
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             RecyclerViewItem recyclerViewItem = recyclerViewItems.get(position);
             //Check holder instance to populate data  according to it
-             if (holder instanceof  BodyHolder) {
-                 BodyHolder bodyHolder = ( BodyHolder) holder;
+            if (holder instanceof BodyHolder) {
+                BodyHolder bodyHolder = (BodyHolder) holder;
                 final Expense expense = (Expense) recyclerViewItem;
-                Log.i("Expense",expense.category);
-                Log.i("Expense",expense.amount);
+                Log.i("Expense", expense.category);
+                Log.i("Expense", expense.amount);
 
-                bodyHolder.category.setText(expense.month);
+                bodyHolder.category.setText(DateUtils.getMonth(Integer.parseInt(expense.month)) + " " + expense.year);
                 bodyHolder.amount.setText(expense.amount);
 
-                 bodyHolder.remove.setOnClickListener(new View.OnClickListener() {
-                     @Override
-                     public void onClick(View v) {
-                         //delete from database
-                         new myDbAdapter(IncomeActivity.this).deleteIncome(expense.id);
-                         //reload list
-                         getIncomes();
-                         Toast.makeText(IncomeActivity.this,"Income removed",Toast.LENGTH_LONG).show();
-                     }
-                 });
+                bodyHolder.remove.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //delete from database
+                        new myDbAdapter(IncomeActivity.this).deleteIncome(expense.id);
+                        //reload list
+                        getIncomes();
+                        Toast.makeText(IncomeActivity.this, "Income removed", Toast.LENGTH_LONG).show();
+                    }
+                });
 
             }
 
@@ -206,13 +257,14 @@ public class IncomeActivity extends AppCompatActivity {
         public class BodyHolder extends RecyclerView.ViewHolder {
 
             TextView amount, category;
-ImageButton remove;
+            ImageButton remove;
+
             public BodyHolder(View v) {
                 super(v);
 //                name = v.findViewById(R.id.name);
                 category = v.findViewById(R.id.category);
                 amount = v.findViewById(R.id.amount);
-                remove=v.findViewById(R.id.remove);
+                remove = v.findViewById(R.id.remove);
             }
         }
 

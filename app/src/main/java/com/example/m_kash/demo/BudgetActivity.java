@@ -117,7 +117,7 @@ public class BudgetActivity extends AppCompatActivity {
 
 
                 myDbAdapter mydbadapter = new myDbAdapter(BudgetActivity.this);
-                mydbadapter.insertBudget(amounts, periods, categorys);
+                mydbadapter.insertBudget(amounts, periods, categorys,"");
                 Toast.makeText(BudgetActivity.this, "Successfully Added Income",Toast.LENGTH_LONG).show();
                 alertDialog.hide();
             }

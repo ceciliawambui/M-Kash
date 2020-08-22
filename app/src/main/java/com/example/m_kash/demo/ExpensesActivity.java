@@ -11,6 +11,8 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,9 +26,13 @@ import com.example.m_kash.database.myDbAdapter;
 import com.example.m_kash.demo.model.Expense;
 import com.example.m_kash.demo.model.ExpenseHeader;
 import com.example.m_kash.demo.model.RecyclerViewItem;
+import com.example.m_kash.demo.utils.DateUtils;
+import com.github.dewinjm.monthyearpicker.MonthYearPickerDialog;
+import com.github.dewinjm.monthyearpicker.MonthYearPickerDialogFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class ExpensesActivity extends AppCompatActivity {
@@ -34,16 +40,19 @@ public class ExpensesActivity extends AppCompatActivity {
     EditText category;
 
     Button okay;
-    Spinner month;
+
     Button cancel;
     FloatingActionButton add;
     RecyclerView recyclerView;
     TextView error;
 
     TextView total;
-    Spinner selectedMonth;
 
-
+    TextView period,periodTv;
+    ImageView chooseMonth;
+    int yearSelected;
+    int monthSelected;
+    LinearLayout datePicker;
 
 
     @Override
@@ -61,32 +70,68 @@ public class ExpensesActivity extends AppCompatActivity {
             }
         });
 
-        recyclerView = findViewById(R.id.recycler_view);
-        error=findViewById(R.id.error);
+        yearSelected = DateUtils.getYear();
+        monthSelected = DateUtils.getMonth();
 
-        selectedMonth = findViewById(R.id.period);
-        total = findViewById(R.id.total);
-        selectedMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        periodTv=findViewById(R.id.period);
+        periodTv.setText(DateUtils.getMonth(monthSelected) + " " + yearSelected);
+
+        datePicker = findViewById(R.id.date_layout);
+        datePicker.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //get expenses from the database
-                Log.i("Expense",selectedMonth.getAdapter().getItem(position).toString())  ;
-                if(selectedMonth.getSelectedItem()!=null){
-                    String month=selectedMonth.getAdapter().getItem(position).toString();
-                    ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this).getExpensesPerMonth(month);
-                    getExpenses(expenses);
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
+            public void onClick(View view) {
+                getMonthYear(true,periodTv);
             }
         });
+        recyclerView = findViewById(R.id.recycler_view);
+        error = findViewById(R.id.error);
+
+
+        total = findViewById(R.id.total);
+
+        ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this)
+                .getExpensesPerMonth(String.valueOf(monthSelected),
+                        String.valueOf(yearSelected));
+        getExpenses(expenses);
 
 //init list
-        getExpenses(new ArrayList<Expense>());
+//        getExpenses(new ArrayList<Expense>());
 
+    }
+
+    public void getMonthYear(final boolean isExpenses,final TextView period) {
+        Calendar calendar = Calendar.getInstance();
+        yearSelected = calendar.get(Calendar.YEAR);
+        monthSelected = calendar.get(Calendar.MONTH);
+
+        MonthYearPickerDialogFragment dialogFragment = MonthYearPickerDialogFragment
+                .getInstance(monthSelected, yearSelected);
+
+        dialogFragment.show(getSupportFragmentManager(), null);
+        dialogFragment.setOnDateSetListener(new MonthYearPickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(int year, int monthOfYear) {
+                // do something
+                int month = monthOfYear + 1;
+                monthSelected = month;
+                yearSelected = year;
+                period.setText(DateUtils.getMonth(month) + " " + year);
+
+                if (isExpenses) {
+
+//                        String month = selectedMonth.getAdapter().getItem(position).toString();
+
+                    ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this)
+                            .getExpensesPerMonth(String.valueOf(monthSelected),
+                                    String.valueOf(yearSelected));
+                    getExpenses(expenses);
+
+
+
+                }
+                //get month
+            }
+        });
     }
 
     private void addExpense() {
@@ -97,7 +142,21 @@ public class ExpensesActivity extends AppCompatActivity {
         View confirmDialog = li.inflate(R.layout.activity_monthly_expenses, null);
         amount = confirmDialog.findViewById(R.id.amount);
         category = confirmDialog.findViewById(R.id.category);
-        month = confirmDialog.findViewById(R.id.period);
+
+        period = confirmDialog.findViewById(R.id.period);
+
+        yearSelected = DateUtils.getYear();
+        monthSelected = DateUtils.getMonth();
+
+        period.setText(DateUtils.getMonth(monthSelected) + " " + yearSelected);
+        chooseMonth = confirmDialog.findViewById(R.id.choose_date);
+        chooseMonth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getMonthYear(false,period);
+            }
+        });
+
         okay = confirmDialog.findViewById(R.id.submit1);
         cancel = confirmDialog.findViewById(R.id.Cancel);
         AlertDialog.Builder alert = new AlertDialog.Builder(ExpensesActivity.this);
@@ -118,14 +177,18 @@ public class ExpensesActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String amounts = amount.getText().toString();
                 String categorys = category.getText().toString();
-                String months = month.getSelectedItem().toString();
 
 
                 myDbAdapter mydbadapter = new myDbAdapter(ExpensesActivity.this);
-                mydbadapter.insertMonthlyExpenses(amounts, categorys, months);
+                mydbadapter.insertMonthlyExpenses(amounts, categorys, String.valueOf(monthSelected)
+                        , String.valueOf(yearSelected));
                 alertDialog.dismiss();
                 Toast.makeText(ExpensesActivity.this, "Successfully Added Expense", Toast.LENGTH_LONG).show();
 
+                ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this)
+                        .getExpensesPerMonth(String.valueOf(monthSelected),
+                                String.valueOf(yearSelected));
+                getExpenses(expenses);
             }
 
 
@@ -140,12 +203,12 @@ public class ExpensesActivity extends AppCompatActivity {
             sum = sum + Double.parseDouble(expenses.get(i).amount);
 
         }
-        total.setText(""+sum);
+        total.setText("" + sum);
         recyclerViewItems.clear();
 //        recyclerViewItems.add(new ExpenseHeader(String.valueOf(total)));
         recyclerViewItems.addAll(expenses);
 
-        if(recyclerViewItems.size()==0){
+        if (recyclerViewItems.size() == 0) {
             error.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
             return;
@@ -196,7 +259,7 @@ public class ExpensesActivity extends AppCompatActivity {
             RecyclerViewItem recyclerViewItem = recyclerViewItems.get(position);
             //Check holder instance to populate data  according to it
             if (holder instanceof HeaderHolder) {
-                final  HeaderHolder headerHolder = (HeaderHolder) holder;
+                final HeaderHolder headerHolder = (HeaderHolder) holder;
                 ExpenseHeader header = (ExpenseHeader) recyclerViewItem;
                 headerHolder.total.setText(header.total);
 
@@ -204,10 +267,9 @@ public class ExpensesActivity extends AppCompatActivity {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         //get expenses from the database
-                        Log.i("Expense",headerHolder.month.getAdapter().getItem(position).toString())  ;
-                        if(headerHolder.month.getSelectedItem()!=null){
-                            String selectedMonth=headerHolder.month.getAdapter().getItem(position).toString();
-                            ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this).getExpensesPerMonth(selectedMonth);
+                        Log.i("Expense", headerHolder.month.getAdapter().getItem(position).toString());
+                        if (headerHolder.month.getSelectedItem() != null) {
+                              ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this).getExpensesPerMonth(String.valueOf(monthSelected), String.valueOf(yearSelected));
                             getExpenses(expenses);
                         }
                     }
@@ -222,8 +284,8 @@ public class ExpensesActivity extends AppCompatActivity {
             } else if (holder instanceof BodyHolder) {
                 BodyHolder bodyHolder = (BodyHolder) holder;
                 final Expense expense = (Expense) recyclerViewItem;
-Log.i("Expense",expense.category);
-                Log.i("Expense",expense.amount);
+                Log.i("Expense", expense.category);
+                Log.i("Expense", expense.amount);
 
                 bodyHolder.category.setText(expense.category);
                 bodyHolder.amount.setText(expense.amount);
@@ -234,10 +296,9 @@ Log.i("Expense",expense.category);
                         //delete from database
                         new myDbAdapter(ExpensesActivity.this).deleteExpense(expense.id);
                         //reload list
-                        String month=selectedMonth.getSelectedItem().toString();
-                        ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this).getExpensesPerMonth(month);
+                        ArrayList<Expense> expenses = new myDbAdapter(ExpensesActivity.this).getExpensesPerMonth(String.valueOf(monthSelected), String.valueOf(yearSelected));
                         getExpenses(expenses);
-                        Toast.makeText(ExpensesActivity.this,"Expense removed",Toast.LENGTH_LONG).show();
+                        Toast.makeText(ExpensesActivity.this, "Expense removed", Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -277,7 +338,7 @@ Log.i("Expense",expense.category);
 //                name = v.findViewById(R.id.name);
                 category = v.findViewById(R.id.category);
                 amount = v.findViewById(R.id.amount);
-                remove=v.findViewById(R.id.remove);
+                remove = v.findViewById(R.id.remove);
 
             }
         }

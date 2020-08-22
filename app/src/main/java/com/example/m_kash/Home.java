@@ -83,7 +83,7 @@ public class Home extends AppCompatActivity {
 
 
                         myDbAdapter mydbadapter = new myDbAdapter(Home.this);
-                        mydbadapter.insertMonthlyExpenses(amounts, categorys, months);
+                        mydbadapter.insertMonthlyExpenses(amounts, categorys, months,"");
 
                         Toast.makeText(Home.this, "Succefylly Added Expense",Toast.LENGTH_LONG).show();
 
@@ -134,7 +134,7 @@ public class Home extends AppCompatActivity {
 
 
                         myDbAdapter mydbadapter = new myDbAdapter(Home.this);
-                        mydbadapter.insertMonthlyIncome(amounts, periods);
+                        mydbadapter.insertMonthlyIncome(amounts, periods,"");
                         Toast.makeText(Home.this, "Succefylly Added Income",Toast.LENGTH_LONG).show();
 
                     }
@@ -228,7 +228,7 @@ public class Home extends AppCompatActivity {
 
 
                         myDbAdapter mydbadapter = new myDbAdapter(Home.this);
-                        mydbadapter.insertBudget(amounts, periods, categorys);
+                        mydbadapter.insertBudget(amounts, periods, categorys,"");
                         Toast.makeText(Home.this, "Succefylly Added Income",Toast.LENGTH_LONG).show();
 
                     }

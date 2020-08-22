@@ -13,7 +13,6 @@ import com.example.m_kash.demo.model.Expense;
 import com.example.m_kash.demo.model.ExpenseLimit;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import static java.lang.String.valueOf;
 
@@ -35,44 +34,49 @@ public class myDbAdapter {
         return id;
     }
 
-    public long insertMonthlyExpenses(String amount, String category, String month) {
+    public long insertMonthlyExpenses(String amount, String category, String month, String year) {
 //        String uniqueId = UUID.randomUUID().toString();
         SQLiteDatabase dbb = myhelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(myDbHelper.AMOUNT, amount);
         contentValues.put(myDbHelper.CATEGORY, category);
         contentValues.put(myDbHelper.MONTH, month);
+        contentValues.put(myDbHelper.YEAR, year);
 //        contentValues.put(myDbHelper.UNIQUE_ID, uniqueId);
 
         long id = dbb.insert(myDbHelper.MONTHLY_EXPENSES_TABLE, null, contentValues);
         return id;
     }
 
-    public long insertBudget(String amount, String category, String month) {
+    public long insertBudget(String amount, String category, String month, String year) {
         SQLiteDatabase dbb = myhelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(myDbHelper.AMOUNT, amount);
         contentValues.put(myDbHelper.CATEGORY, category);
         contentValues.put(myDbHelper.MONTH, month);
+        contentValues.put(myDbHelper.YEAR, year);
         long id = dbb.insert(myDbHelper.MONTHLY_EXPENSES_TABLE, null, contentValues);
         return id;
     }
-    public long createLimit(String limit, String month) {
+
+    public long createLimit(String limit, String month, String year) {
         SQLiteDatabase dbb = myhelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(myDbHelper.LIMIT, limit);
         contentValues.put(myDbHelper.MONTH, month);
+        contentValues.put(myDbHelper.YEAR, year);
         long id = dbb.insert(myDbHelper.EXPENDITURE_LIMIT_TABLE, null, contentValues);
         return id;
     }
 
-    public long insertMonthlyIncome(String amount, String month) {
+    public long insertMonthlyIncome(String amount, String month, String year) {
 //        String uniqueId = UUID.randomUUID().toString();
 
         SQLiteDatabase dbb = myhelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(myDbHelper.AMOUNT, amount);
         contentValues.put(myDbHelper.MONTH, month);
+        contentValues.put(myDbHelper.YEAR, year);
 //        contentValues.put(myDbHelper.UNIQUE_ID, uniqueId);
         long id = dbb.insert(myDbHelper.MONTHLY_INCOME_TABLE, null, contentValues);
         return id;
@@ -91,10 +95,10 @@ public class myDbAdapter {
         return array_list;
     }
 
-    public ArrayList<Expense> getExpensesPerMonth(String month) {
+    public ArrayList<Expense> getExpensesPerMonth(String month,String year) {
         ArrayList<Expense> expenses = new ArrayList<>();
         String selectQuery = "SELECT  *  FROM  " + myDbHelper.MONTHLY_EXPENSES_TABLE
-                + " WHERE " + myDbHelper.MONTH + "='" + month + "'";
+                + " WHERE " + myDbHelper.MONTH + "='" + month + "' AND "+ myDbHelper.YEAR + "='" + year + "'";
         try {
             SQLiteDatabase db = myhelper.getWritableDatabase();
             Cursor cursor = db.rawQuery(selectQuery, null);
@@ -104,7 +108,8 @@ public class myDbAdapter {
                             cursor.getString(cursor.getColumnIndex(myDbHelper.UID)),
                             cursor.getString(cursor.getColumnIndex(myDbHelper.CATEGORY)),
                             cursor.getString(cursor.getColumnIndex(myDbHelper.MONTH)),
-                            cursor.getString(cursor.getColumnIndex(myDbHelper.AMOUNT)));
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.AMOUNT)),
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.YEAR)));
 
                     if (!TextUtils.isEmpty(expense.amount) && !TextUtils.isEmpty(expense.category))
                         expenses.add(expense);
@@ -117,25 +122,26 @@ public class myDbAdapter {
         return expenses;
     }
 
-    public ExpenseLimit getExpenditureLimit(String month) {
-        ExpenseLimit expenseLimit=new ExpenseLimit();
+    public ExpenseLimit getExpenditureLimit(String month,String year) {
+        ExpenseLimit expenseLimit = new ExpenseLimit();
         String selectQuery = "SELECT  *  FROM  " + myDbHelper.EXPENDITURE_LIMIT_TABLE
-                + " WHERE " + myDbHelper.MONTH + "='" + month + "'";
+                + " WHERE " + myDbHelper.MONTH + "='" + month + "' AND "+ myDbHelper.YEAR + "='" + year + "'";
         try {
             SQLiteDatabase db = myhelper.getWritableDatabase();
             Cursor cursor = db.rawQuery(selectQuery, null);
-           Log.i("Db", DatabaseUtils.dumpCursorToString(cursor));
+            Log.i("Db", DatabaseUtils.dumpCursorToString(cursor));
 
             if (cursor.moveToFirst()) {
                 do {
 
-                    ExpenseLimit limit=new ExpenseLimit(
+                    ExpenseLimit limit = new ExpenseLimit(
                             cursor.getString(cursor.getColumnIndex(myDbHelper.UID)),
                             cursor.getString(cursor.getColumnIndex(myDbHelper.LIMIT)),
-                            cursor.getString(cursor.getColumnIndex(myDbHelper.MONTH)));
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.MONTH)),
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.YEAR)));
 
 
-                    expenseLimit=limit;
+                    expenseLimit = limit;
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
@@ -158,7 +164,8 @@ public class myDbAdapter {
                             cursor.getString(cursor.getColumnIndex(myDbHelper.UID)),
                             "",
                             cursor.getString(cursor.getColumnIndex(myDbHelper.MONTH)),
-                            cursor.getString(cursor.getColumnIndex(myDbHelper.AMOUNT)));
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.AMOUNT)),
+                            cursor.getString(cursor.getColumnIndex(myDbHelper.YEAR)));
 
                     if (!TextUtils.isEmpty(expense.amount))
                         expenses.add(expense);
@@ -172,11 +179,11 @@ public class myDbAdapter {
     }
 
     public void deleteIncome(String id) {
-        Log.i("Db", "Id "+id);
+        Log.i("Db", "Id " + id);
         try {
             SQLiteDatabase db = myhelper.getWritableDatabase();
-            db.execSQL("DELETE FROM " + myDbHelper.MONTHLY_INCOME_TABLE + " WHERE " + myDbHelper.UID+ " =\'" + id + "\'");
-  Log.i("Db", "Item deleted");
+            db.execSQL("DELETE FROM " + myDbHelper.MONTHLY_INCOME_TABLE + " WHERE " + myDbHelper.UID + " =\'" + id + "\'");
+            Log.i("Db", "Item deleted");
 
         } catch (Exception e) {
             Log.i("Db", Log.getStackTraceString(e));
@@ -186,7 +193,7 @@ public class myDbAdapter {
     public void deleteExpense(String id) {
         try {
             SQLiteDatabase db = myhelper.getWritableDatabase();
-            db.execSQL("DELETE FROM " + myDbHelper.MONTHLY_EXPENSES_TABLE + " WHERE " + myDbHelper.UID+ " =\'" + id + "\'");
+            db.execSQL("DELETE FROM " + myDbHelper.MONTHLY_EXPENSES_TABLE + " WHERE " + myDbHelper.UID + " =\'" + id + "\'");
 
 
         } catch (Exception e) {
@@ -195,10 +202,10 @@ public class myDbAdapter {
     }
 
 
-    public double getIncome(String month) {
+    public double getIncome(String month,String year) {
         double income = 0;
         String selectQuery = "SELECT  *  FROM  " + myDbHelper.MONTHLY_INCOME_TABLE
-                + " WHERE " + myDbHelper.MONTH + "='" + month + "'";
+                + " WHERE " + myDbHelper.MONTH + "='" + month + "' AND "+ myDbHelper.YEAR + "='" + year + "'";
         ;
         try {
 
@@ -316,7 +323,7 @@ public class myDbAdapter {
         private static final String MONTHLY_EXPENSES_TABLE = "monthlyExpenses"; // Table Name
         private static final String MONTHLY_INCOME_TABLE = "monthlyIncome"; // Table Name
         private static final String MONTHLY_BUDGET_TABLE = "monthlyBudget"; // Table Name
-        private static final int DATABASE_Version = 2; // Database Version
+        private static final int DATABASE_Version = 7; // Database Version
         private static final String EXPENDITURE_LIMIT_TABLE = "ExpenditureLimit";
         private static final String UID = "_id"; // Column I (Primary Key)
         private static final String NAME = "Name"; //Column II
@@ -327,27 +334,32 @@ public class myDbAdapter {
         private static final String LIMIT = "LimitAmount";
 
 
-//        private static final String UNIQUE_ID = "Id";
+        //        private static final String UNIQUE_ID = "Id";
         private static final String CATEGORY = "Category";
         private static final String MONTH = "Month";
+        private static final String YEAR = "Year";
+
         private static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME +
                 " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + NAME + " VARCHAR(255) ," + MyPASSWORD + " VARCHAR(225)," + EMAIL + " VARCHAR(225));";
         private static final String MONTHLY_EXPENSES = "CREATE TABLE " + MONTHLY_EXPENSES_TABLE +
-                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + CATEGORY + " VARCHAR(225)," + MONTH + " VARCHAR(225));";
+                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + CATEGORY + " VARCHAR(225)," + YEAR + " VARCHAR(225)," + MONTH + " VARCHAR(225));";
         private static final String MONTHLY_INCOME = "CREATE TABLE " + MONTHLY_INCOME_TABLE +
-                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + MONTH + " VARCHAR(225));";
+                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + YEAR + " VARCHAR(225)," + MONTH + " VARCHAR(225));";
         private static final String MONTHLY_BUDGET = "CREATE TABLE " + MONTHLY_BUDGET_TABLE +
-                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + CATEGORY + " VARCHAR(225)," + MONTH + " VARCHAR(225));";
+                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AMOUNT + " VARCHAR(255) ," + CATEGORY + " VARCHAR(225)," + YEAR + " VARCHAR(225)," + MONTH + " VARCHAR(225));";
 
 
         private static final String LIMIT_CREATE_QUERY = "CREATE TABLE " + EXPENDITURE_LIMIT_TABLE +
-                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + LIMIT + " VARCHAR(255) ,"  + MONTH + " VARCHAR(225));";
+                " (" + UID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + LIMIT + " VARCHAR(255) ," + YEAR + " VARCHAR(225)," + MONTH + " VARCHAR(225));";
 
 
         private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
         private static final String DROP_MONTHLY_EXPENSES_TABLE = "DROP TABLE IF EXISTS " + MONTHLY_EXPENSES_TABLE;
         private static final String DROP_MONTHLY_INCOME_TABLE = "DROP TABLE IF EXISTS " + MONTHLY_INCOME_TABLE;
         private static final String DROP_MONTHLY_BUDGET_TABLE = "DROP TABLE IF EXISTS " + MONTHLY_BUDGET_TABLE;
+        private static final String DROP_EXPENDITURE_LIMIT_TABLE = "DROP TABLE IF EXISTS " + EXPENDITURE_LIMIT_TABLE;
+
+
         private Context context;
 
         public myDbHelper(Context context) {
@@ -364,6 +376,7 @@ public class myDbAdapter {
                 db.execSQL(MONTHLY_BUDGET);
                 db.execSQL(LIMIT_CREATE_QUERY);
             } catch (Exception e) {
+                Log.i("Db",Log.getStackTraceString(e));
                 Message.message(context, "" + e);
             }
         }
@@ -376,9 +389,10 @@ public class myDbAdapter {
                 db.execSQL(DROP_MONTHLY_EXPENSES_TABLE);
                 db.execSQL(DROP_MONTHLY_INCOME_TABLE);
                 db.execSQL(DROP_MONTHLY_BUDGET_TABLE);
-                db.execSQL(LIMIT_CREATE_QUERY);
+                db.execSQL(DROP_EXPENDITURE_LIMIT_TABLE);
                 onCreate(db);
             } catch (Exception e) {
+                Log.i("Db>>",Log.getStackTraceString(e));
                 Message.message(context, "" + e);
             }
         }
